@@ -66,6 +66,16 @@ def render_latex(template_name: str, data: dict) -> str:
     # Escape the data structure recursively to secure latex formatting
     escaped_data = recursive_escape_latex(data)
     
+    # Also escape the keys of the skills dictionary specifically (e.g. "Business & Operations Analysis")
+    if isinstance(escaped_data, dict) and "skills" in escaped_data:
+        skills = escaped_data["skills"]
+        if isinstance(skills, dict):
+            escaped_skills = {}
+            for k, v in skills.items():
+                escaped_key = escape_latex_str(k)
+                escaped_skills[escaped_key] = v
+            escaped_data["skills"] = escaped_skills
+    
     # Render with Jinja2 environment
     template = latex_env.from_string(template_str)
     return template.render(**escaped_data)
