@@ -238,7 +238,7 @@ TEMPLATES["Classic Lines (xprilion)"] = r"""\documentclass[a4paper,20pt]{article
 \newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
 
 %-----------------------------
-%%%%%%  CV STARTS HERE  %%%%%%
+% % % % % %  CV STARTS HERE  % % % % % %
 
 \begin{document}
 
@@ -349,9 +349,9 @@ TEMPLATES["PwC Modern (adcv)"] = r"""\documentclass[a4paper,10pt]{article}
 }{}{0em}{}[\color{linegray}\titlerule \vspace{-3pt}]
 
 \newenvironment{adcvtabletwo}{
-  \begin{tabularx}{\textwidth}{@{} X r @{}}
+  \tabularx{\textwidth}{@{} X r @{}}
 }{
-  \end{tabularx}
+  \endtabularx
 }
 
 \newcommand{\adcvrowtwo}[2]{

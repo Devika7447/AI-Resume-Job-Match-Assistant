@@ -125,6 +125,7 @@ def compile_latex_cloud(latex_code: str) -> bytes:
     Compiles LaTeX code using public online compiler APIs.
     Tries texlive.net (POST multipart) first, and falls back to latexonline.cc (GET) if it fails.
     """
+    texlive_err = None
     # 1. Try texlive.net POST API
     texlive_url = "https://texlive.net/cgi-bin/latexcgi"
     try:
@@ -137,22 +138,40 @@ def compile_latex_cloud(latex_code: str) -> bytes:
             'return': 'pdf'
         }
         response = requests.post(texlive_url, files=files, data=data, timeout=30)
-        if response.status_code == 200 and response.content.startswith(b"%PDF"):
-            return response.content
+        if response.status_code == 200:
+            if response.content.startswith(b"%PDF"):
+                return response.content
+            else:
+                # If status is 200 but not %PDF, it's usually a log file containing the compile error
+                log_text = response.text[:1000]
+                raise RuntimeError(f"texlive.net compiled with errors. Log snippet:\n{log_text}")
+        else:
+            raise RuntimeError(f"texlive.net returned status {response.status_code}: {response.text[:200]}")
     except Exception as e:
+        texlive_err = e
         print(f"texlive.net compilation failed or timed out: {e}")
         
     # 2. Fallback to latexonline.cc GET API
     latexonline_url = "https://latexonline.cc/compile"
     try:
         response = requests.get(latexonline_url, params={'text': latex_code}, timeout=30)
-        if response.status_code == 200 and response.content.startswith(b"%PDF"):
-            return response.content
+        if response.status_code == 200:
+            if response.content.startswith(b"%PDF"):
+                return response.content
+            else:
+                log_text = response.text[:1000]
+                raise RuntimeError(f"latexonline.cc compiled with errors. Log snippet:\n{log_text}")
         else:
             err_msg = response.text[:200] if response.text else "No response body"
             raise RuntimeError(f"latexonline.cc returned status {response.status_code}: {err_msg}")
     except Exception as e:
-        raise RuntimeError(f"All online compilers failed. Fallback error: {str(e)}")
+        # Combine both errors to provide full debugging context
+        total_err = (
+            f"All online compilers failed.\n\n"
+            f"[texlive.net Error]: {texlive_err}\n\n"
+            f"[latexonline.cc Fallback Error]: {e}"
+        )
+        raise RuntimeError(total_err)
 
 def compile_latex_to_pdf(latex_code: str) -> tuple:
     """
