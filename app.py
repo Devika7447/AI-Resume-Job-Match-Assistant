@@ -1274,6 +1274,11 @@ elif st.session_state.active_page == "LaTeX Generator":
         if st.button("Compile PDF Document", type="primary"):
             with st.spinner("Compiling (Local/Cloud)..."):
                 try:
+                    try:
+                        with open("debug_resume.tex", "w", encoding="utf-8") as f:
+                            f.write(st.session_state.latex_code)
+                    except Exception as df_err:
+                        print("Failed to save debug_resume.tex:", df_err)
                     pdf_bytes, status_msg = compiler.compile_latex_to_pdf(st.session_state.latex_code)
                     st.session_state.compiled_pdf = pdf_bytes
                     st.success(status_msg)

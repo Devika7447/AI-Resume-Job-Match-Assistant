@@ -143,7 +143,7 @@ def compile_latex_cloud(latex_code: str) -> bytes:
                 return response.content
             else:
                 # If status is 200 but not %PDF, it's usually a log file containing the compile error
-                log_text = response.text[:1000]
+                log_text = response.text[-1500:]
                 raise RuntimeError(f"texlive.net compiled with errors. Log snippet:\n{log_text}")
         else:
             raise RuntimeError(f"texlive.net returned status {response.status_code}: {response.text[:200]}")
@@ -159,7 +159,7 @@ def compile_latex_cloud(latex_code: str) -> bytes:
             if response.content.startswith(b"%PDF"):
                 return response.content
             else:
-                log_text = response.text[:1000]
+                log_text = response.text[-1500:]
                 raise RuntimeError(f"latexonline.cc compiled with errors. Log snippet:\n{log_text}")
         else:
             err_msg = response.text[:200] if response.text else "No response body"
